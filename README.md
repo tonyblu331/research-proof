@@ -178,10 +178,6 @@ skills/research-proof/
 .github/
 ```
 
-## Limits
-
-Research Proof is not a proof oracle. It does not replace domain experts, formal methods, peer review, or real experiments. It makes weak claims easier to reject and strong claims easier to test.
-
 ## License
 
 MIT
