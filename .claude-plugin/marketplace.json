@@ -1,0 +1,53 @@
+{
+  "name": "research-proof",
+  "owner": {
+    "name": "Tony Blanco"
+  },
+  "metadata": {
+    "description": "Claude Code plugins for falsifiable research planning, evaluator discipline, proof ladders, and proof ledgers."
+  },
+  "plugins": [
+    {
+      "name": "research-proof-plugin",
+      "source": "./plugins/research-proof-plugin",
+      "description": "Pressure-test research claims with falsifiable verifier plans, proof ladders, and proof ledgers.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Tony Blanco"
+      },
+      "homepage": "https://github.com/tonyblu331/research-proof",
+      "repository": "https://github.com/tonyblu331/research-proof",
+      "license": "MIT",
+      "category": "research",
+      "tags": [
+        "research",
+        "evaluation",
+        "evals",
+        "benchmarking",
+        "proof",
+        "proof-ledger",
+        "falsification",
+        "verification",
+        "research-agent",
+        "autonomous-agents"
+      ],
+      "keywords": [
+        "agent-skills",
+        "claude-code",
+        "research",
+        "research-agent",
+        "ai-research",
+        "evaluation",
+        "evals",
+        "benchmarking",
+        "proof",
+        "proof-ledger",
+        "falsification",
+        "verification",
+        "scientific-method",
+        "prompt-engineering",
+        "autonomous-agents"
+      ]
+    }
+  ]
+}

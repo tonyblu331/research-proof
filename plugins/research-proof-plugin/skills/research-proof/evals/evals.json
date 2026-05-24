@@ -1,0 +1,181 @@
+{
+  "skill_name": "research-proof",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Can an autonomous loop improve a training recipe overnight?",
+      "expected_output": "A fixed-harness research program that freezes the evaluator, data split, time budget, prompts, and dependencies before any candidate loop runs.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with domain, baseline, candidate family, primary metric, guardrails, hidden costs, and win condition.",
+        "Defines the Verifier Boundary by naming frozen evaluator, frozen data split, fixed time budget, immutable prompts/dependencies, mutable recipe candidate, and tampering rules.",
+        "Defines Baseline / Candidate Family and a keep/reset frontier rule for candidate recipes.",
+        "Lists Enemy Terms including evaluator-hacking, hidden-cost-leak, data leakage, extra supervision, failed-run hiding, runtime, and dependency changes.",
+        "Includes Rejection Gates that reject modifying evaluator, changing data split, extending time budget, changing prompts/dependencies, or hiding failed runs.",
+        "Includes a Proof Ladder / Transfer Path with local fixture score, held-out split, and production-style transfer check.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting evaluator-hacking or no-transfer-gate."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Can a new compression representation beat the current baseline?",
+      "expected_output": "A compression proof program that defines the input family, baseline representation, cost accounting, rejection gates, and shortest losing fixture.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with input family, baseline codec or representation, candidate family, measured output quality, required delta, and guardrails.",
+        "Defines the Verifier Boundary by freezing corpus split, evaluator, quality metric, metadata accounting, decode environment, and candidate-visible data.",
+        "Defines Baseline / Candidate Family and the exact candidate representation space.",
+        "Lists Enemy Terms including hidden-cost-leak, no-transfer-gate, metadata size, decode cost, complexity, fallback path, distribution shift, and status-inflation risk.",
+        "Includes Rejection Gates that reject generic 'smaller' claims, ignored metadata, ignored decode cost, or testing only training data.",
+        "Includes a Proof Ladder / Transfer Path from toy examples to held-out data and a production-style decode constraint.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test: the shortest fixture that makes the representation lose."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can multiple agents discover a better alignment method if we keep whatever scores best?",
+      "expected_output": "A divergent-researcher protocol that keeps scoring frozen, treats evaluation as the bottleneck, and rejects reward-hacked winners.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with baseline method, candidate method family, shared score, guardrails, human review budget, and transfer condition.",
+        "Defines the Verifier Boundary by freezing the scoring function, hidden evals, selection rule, reviewer rubric, and what agents may not inspect or change.",
+        "Defines Baseline / Candidate Family with diverse starting priors and a shared comparison protocol.",
+        "Lists Enemy Terms including evaluator-hacking, reward hacking, hidden-cost-leak, human review burden, supervision cost, generic-pressure, and single benchmark overfit.",
+        "Includes Rejection Gates that reject 'keep whatever scores best' unless the score resists gaming and transfer checks pass.",
+        "Includes a Proof Ladder / Transfer Path from candidate construction to held-out domains and adversarial review.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting evaluator-hacking or reward-hacked selection."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Can LLM-generated programs discover a better bin-packing heuristic?",
+      "expected_output": "An evaluator-gated program-search design that separates correctness, complexity, empirical runtime, and distribution transfer.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with problem class, baseline heuristic, generated-program candidate family, metric, guardrails, and win condition.",
+        "Defines the Verifier Boundary by freezing correctness tests, benchmark distribution, runtime environment, complexity accounting, and evaluator access.",
+        "Defines Baseline / Candidate Family and stores frontier programs with scores and complexity notes.",
+        "Lists Enemy Terms including evaluator-hacking, proof-gap, no-transfer-gate, skipped correctness, hidden asymptotic cost, and benchmark overfit.",
+        "Includes Rejection Gates that reject candidates that skip correctness, exploit evaluator weaknesses, hide asymptotic cost, or overfit benchmark distribution.",
+        "Includes a Proof Ladder / Transfer Path separating examples, counterexample search, correctness proof/checker, empirical runtime, and held-out instances.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting evaluator-hacking in the generated program."
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Can we synthesize several modern AI research workflows into one reusable method?",
+      "expected_output": "An evidence-synthesis review that separates source facts, author interpretation, and inference while producing a method matrix with tradeoffs.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim defining the reusable-method scope, baseline workflow, candidate synthesis, success criteria, and transfer condition.",
+        "Defines the Verifier Boundary by naming current-source checks, accepted source types, mutable synthesis, review process, and source-claim limits.",
+        "Defines Baseline / Candidate Family with existing methods as baselines and candidate synthesis patterns as the allowed family.",
+        "Lists Enemy Terms including source-confusion, status-inflation, generic-pressure, stale sources, cherry-picked evidence, and treating narratives as proof.",
+        "Includes Rejection Gates that reject stale sources, organization-authored narratives treated as neutral proof, and missing method tradeoffs.",
+        "Includes a Proof Ladder / Transfer Path from source facts to method matrix, counter-sources, and transfer to a held-out research workflow.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test that could weaken the favorite synthesis."
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Can we prove this greedy algorithm is optimal for every instance in this problem class?",
+      "expected_output": "A proof-oriented research program with definitions, quantifiers, counterexample search, proof method, lemmas, rejection gates, status label, and next pressure.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with precise objects, assumptions, quantifiers, baseline algorithm, greedy candidate, and scope of optimality.",
+        "Defines the Verifier Boundary by naming acceptable proof/checker, mutable proof attempt, forbidden quantifier changes, and reviewer criteria.",
+        "Defines Baseline / Candidate Family with the greedy algorithm and competing constructions or known algorithms.",
+        "Lists Enemy Terms including proof-gap, soft-claim, status-inflation, examples-as-proof, missing quantifiers, and skipped counterexample search.",
+        "Includes Rejection Gates that reject PROVEN status unless the proof covers every instance in the stated class.",
+        "Includes a Proof Ladder / Transfer Path with examples, counterexample search, invariants, lemmas, proof sketch, executable checker, and formal or expert verification.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test: the smallest counterexample search space or edge case family."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Does intervention X improve outcome Y in population Z?",
+      "expected_output": "A scientific hypothesis plan with controls, confounders, measurement method, exclusion criteria, replication, and causality guardrails.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with intervention, outcome, population, baseline/control, effect size, measurement method, and win condition.",
+        "Defines the Verifier Boundary by freezing study design, measurement instrument, inclusion/exclusion criteria, analysis plan, and what cannot change after observing data.",
+        "Defines Baseline / Candidate Family with control condition and allowed intervention variants.",
+        "Lists Enemy Terms including soft-claim, hidden-cost-leak, no-transfer-gate, confounders, measurement bias, correlation-as-causation, and replication risk.",
+        "Includes Rejection Gates that reject claims without controls, falsifiable measurement, confounder handling, or replication/held-out validation.",
+        "Includes a Proof Ladder / Transfer Path from pilot measurement to controlled study, replication, and held-out population validation.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting the most likely confounder or measurement failure."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "Will this event-driven architecture reduce coupling without increasing operational risk?",
+      "expected_output": "An architecture claim review with coupling metric, baseline architecture, candidate architecture, operational guardrails, rollback gate, and production transfer.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with coupling metric, baseline architecture, event-driven candidate, risk guardrails, hidden costs, and win condition.",
+        "Defines the Verifier Boundary by freezing architecture comparison criteria, operational risk metrics, observability requirements, rollback criteria, and migration scope.",
+        "Defines Baseline / Candidate Family with current architecture and allowed event-driven changes.",
+        "Lists Enemy Terms including generic-pressure, hidden-cost-leak, no-transfer-gate, migration cost, observability gaps, failure modes, latency, and team cognition.",
+        "Includes Rejection Gates that reject architecture taste as evidence, ignored migration cost, missing rollback, or untested production-style constraints.",
+        "Includes a Proof Ladder / Transfer Path from dependency map to fixture migration, failure injection, rollback drill, and production transfer gate.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting operational risk or rollback failure."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Can this benchmark prove our model is better?",
+      "expected_output": "An evaluation-validity analysis that separates benchmark validity from model performance, charges contamination/saturation/grading risk, and prevents status inflation.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim that separates benchmark-validity scope from model-performance superiority.",
+        "Defines the Verifier Boundary by freezing benchmark data, grading rubric, contamination checks, model access rules, and evaluator mutability.",
+        "Defines Baseline / Candidate Family with compared model(s), baseline model, benchmark scope, and allowed prompt/config changes.",
+        "Lists Enemy Terms including status-inflation, source-confusion, evaluator-hacking, contamination, saturation, subjective grading without rubric, and distribution mismatch.",
+        "Includes Rejection Gates that reject the word PROVEN unless benchmark scope, contamination, saturation, and grading objectivity support it.",
+        "Includes a Proof Ladder / Transfer Path from benchmark score to held-out, adversarial, or production-style evaluation.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting evaluator-hacking or benchmark contamination."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Will this onboarding change increase activation?",
+      "expected_output": "A product-experiment plan with activation metric, baseline, candidate change, sample, guardrails, retention checks, and shipment rejection gates.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim with activation metric, baseline onboarding, candidate change, sample, guardrails, effect threshold, and win condition.",
+        "Defines the Verifier Boundary by freezing experiment design, assignment logic, metric definition, analysis window, segment rules, and shipment criteria.",
+        "Defines Baseline / Candidate Family with current onboarding and allowed candidate changes.",
+        "Lists Enemy Terms including soft-claim, hidden-cost-leak, no-transfer-gate, novelty effects, segment shift, support burden, and long-term retention.",
+        "Includes Rejection Gates that reject shipping from short-term lift only, ignored segment shift, missing retention guardrail, or unsupported causal design.",
+        "Includes a Proof Ladder / Transfer Path from A/B or quasi-experiment to segment analysis and retention transfer check.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting retention decay or segment-shift failure."
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Can an agent keep researching this topic until it finds a strong answer?",
+      "expected_output": "A falsifiable research loop with explicit done criteria, compact state, observable actions, verifier checks, stop conditions, ledger decision, and next pressure.",
+      "files": [],
+      "expectations": [
+        "States a falsifiable Claim defining what a strong answer means, baseline research process, candidate agent loop, evidence standard, and win condition.",
+        "Defines the Verifier Boundary by naming done criteria, budget, retry limits, stop conditions, compact state, and what the agent cannot change.",
+        "Defines Baseline / Candidate Family with manual or fixed-process research as baseline and allowed tool-using agent loop variants.",
+        "Lists Enemy Terms including loop-drift, generic-pressure, status-inflation, stale state, repeated failing action, unobservable progress, and acting without observation.",
+        "Includes Rejection Gates that reject continuing when observations stop changing the proof ledger, when retry limits are exhausted, or when verifier tampering occurs.",
+        "Includes a Proof Ladder / Transfer Path from action observations to verification, ledger updates, and stop/continue decision.",
+        "Includes a Proof Ledger Decision using CONTINUE, REFINE, PIVOT, or REJECT.",
+        "Names a concrete Next Pressure test targeting loop-drift or repeated failing action."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "training-loop",
+    "domain": "machine learning optimization",
+    "prompt": "Can an autonomous loop improve a training recipe overnight?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["evaluator-hacking", "hidden-cost-leak", "no-transfer-gate"],
+    "forbidden_shortcuts": ["modify evaluator", "change data split", "extend time budget", "hide failed runs"]
+  },
+  {
+    "id": "compression-representation",
+    "domain": "compression",
+    "prompt": "Can a new compression representation beat the current baseline?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["hidden-cost-leak", "status-inflation", "no-transfer-gate"],
+    "forbidden_shortcuts": ["ignore metadata", "ignore decode cost", "test only training data"]
+  },
+  {
+    "id": "alignment-search",
+    "domain": "alignment research",
+    "prompt": "Can multiple agents discover a better alignment method if we keep whatever scores best?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["evaluator-hacking", "hidden-cost-leak", "generic-pressure"],
+    "forbidden_shortcuts": ["reward hacking", "ignore human review", "single benchmark win"]
+  },
+  {
+    "id": "algorithm-discovery",
+    "domain": "algorithms",
+    "prompt": "Can LLM-generated programs discover a better bin-packing heuristic?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["evaluator-hacking", "proof-gap", "no-transfer-gate"],
+    "forbidden_shortcuts": ["skip correctness", "hide asymptotic cost", "overfit benchmark distribution"]
+  },
+  {
+    "id": "method-synthesis",
+    "domain": "research methodology",
+    "prompt": "Can we synthesize several modern AI research workflows into one reusable method?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["source-confusion", "status-inflation", "generic-pressure"],
+    "forbidden_shortcuts": ["stale sources", "treat narrative as proof", "omit tradeoffs"]
+  },
+  {
+    "id": "mathematical-claim",
+    "domain": "mathematics",
+    "prompt": "Can we prove this greedy algorithm is optimal for every instance in this problem class?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["proof-gap", "soft-claim", "status-inflation"],
+    "forbidden_shortcuts": ["examples as proof", "missing quantifiers", "skip counterexample search"]
+  },
+  {
+    "id": "scientific-hypothesis",
+    "domain": "scientific experiment",
+    "prompt": "Does intervention X improve outcome Y in population Z?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["soft-claim", "hidden-cost-leak", "no-transfer-gate"],
+    "forbidden_shortcuts": ["ignore confounders", "correlation as causation", "no replication"]
+  },
+  {
+    "id": "architecture-claim",
+    "domain": "software architecture",
+    "prompt": "Will this event-driven architecture reduce coupling without increasing operational risk?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["generic-pressure", "hidden-cost-leak", "no-transfer-gate"],
+    "forbidden_shortcuts": ["architecture taste as evidence", "ignore migration cost", "no rollback gate"]
+  },
+  {
+    "id": "benchmark-validity",
+    "domain": "evaluation",
+    "prompt": "Can this benchmark prove our model is better?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["status-inflation", "source-confusion", "evaluator-hacking"],
+    "forbidden_shortcuts": ["contaminated benchmark", "saturated benchmark", "subjective grading without rubric"]
+  },
+  {
+    "id": "product-experiment",
+    "domain": "product experimentation",
+    "prompt": "Will this onboarding change increase activation?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["soft-claim", "hidden-cost-leak", "no-transfer-gate"],
+    "forbidden_shortcuts": ["short-term lift only", "ignore segment shift", "no retention guardrail"]
+  },
+  {
+    "id": "tool-using-agent-loop",
+    "domain": "agent workflow",
+    "prompt": "Can an agent keep researching this topic until it finds a strong answer?",
+    "required_pressure": ["claim", "verifier_boundary", "baseline_candidate", "enemy_terms", "rejection_gates", "proof_ladder", "proof_ledger_decision", "next_pressure"],
+    "expected_failure_modes": ["loop-drift", "generic-pressure", "status-inflation"],
+    "forbidden_shortcuts": ["no stop condition", "repeat failing action", "act without observation"]
+  }
+]

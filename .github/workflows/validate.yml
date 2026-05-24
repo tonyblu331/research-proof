@@ -1,0 +1,29 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run structural backtest
+        run: python skills/research-proof/scripts/backtest_research_skill.py
+
+      - name: Validate eval JSON
+        run: python -m json.tool skills/research-proof/evals/evals.json > /dev/null
+
+      - name: Compile helper scripts
+        run: python -m py_compile skills/research-proof/scripts/backtest_research_skill.py skills/research-proof/scripts/prepare_behavioral_workspace.py

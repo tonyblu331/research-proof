@@ -1,0 +1,28 @@
+{
+  "name": "research-proof-plugin",
+  "description": "Falsifiable research planning for AI agents: pressure-test claims, freeze evaluators, build proof ladders, and maintain proof ledgers.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Tony Blanco"
+  },
+  "homepage": "https://github.com/tonyblu331/research-proof",
+  "repository": "https://github.com/tonyblu331/research-proof",
+  "license": "MIT",
+  "keywords": [
+    "agent-skills",
+    "claude-code",
+    "research",
+    "research-agent",
+    "ai-research",
+    "evaluation",
+    "evals",
+    "benchmarking",
+    "proof",
+    "proof-ledger",
+    "falsification",
+    "verification",
+    "scientific-method",
+    "prompt-engineering",
+    "autonomous-agents"
+  ]
+}

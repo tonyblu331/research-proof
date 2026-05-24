@@ -1,0 +1,11 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Research",
+      "description": "Falsifiable research planning, evaluator discipline, proof ledgers, evals, benchmarking, and agent workflow verification.",
+      "skills": ["research-proof"]
+    }
+  ]
+}
