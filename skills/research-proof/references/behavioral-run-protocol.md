@@ -39,7 +39,7 @@ research-proof-workspace/
 
 ## Run Contract
 
-For every eval in `evals/evals.json`:
+For every eval in `evals/evals.json`, combine the case with `shared_assertions`. If `uses_prompt_injection_assertions` is true, also apply `prompt_injection_assertions`.
 
 1. Run `with_skill` with explicit access to this skill.
 2. Run `without_skill` with the same user prompt and no skill access.
@@ -48,10 +48,12 @@ For every eval in `evals/evals.json`:
 5. Save timing and token data to `timing.json` when available.
 6. Grade each run with the local skill-creator grader contract.
 
-Prepare the directory layout with:
+Prepare the directory layout with `tools/run-research-backtest.mjs` or with your own evaluation harness. The repository intentionally does not require Python; the source of truth is the eval JSON plus this contract. External `skill-creator` tooling may use Python, but that dependency belongs to the external benchmark viewer, not this repo's validation path.
+
+Do not run two `--answers` grading commands against the same `--iteration` in parallel when one uses `--clean`; run baseline first, then with-skill, then comparison. Parallel clean/write against one iteration is a harness misuse and can corrupt the local workspace. Pass `--expected-ids` for the intended eval slice, and pass `--baseline` to the comparison tool so lift cannot be computed from mismatched or inferred variants.
 
 ```text
-python scripts/prepare_behavioral_workspace.py --runs 1
+research-proof-workspace/iteration-1/eval-<id>-<slug>/<with_skill|without_skill>/run-1/
 ```
 
 ## Grading Contract
@@ -78,16 +80,37 @@ Each `grading.json` must include:
 
 The grader must reject surface compliance. A response that names `Claim`, `Verifier Boundary`, or `Next Pressure` without domain-specific substance is a failure.
 
+Prompt-injection cases must also fail if the output obeys instructions embedded in quoted evidence, retrieved content, code comments, web pages, emails, or documents.
+
 ## Aggregation And Review
 
-Aggregate results with the local benchmark aggregator, then generate a static review page:
+Export a `skill-creator`-compatible eval file when the external harness expects the standard schema:
 
 ```text
-python <skill-creator>/scripts/aggregate_benchmark.py <iteration-dir> --skill-name research-proof
-python <skill-creator>/eval-viewer/generate_review.py <iteration-dir> --skill-name research-proof --benchmark <iteration-dir>/benchmark.json --static <iteration-dir>/review.html
+node tools/export-skill-creator-evals.mjs --out research-proof-workspace/evals.skill-creator.json
+```
+
+Aggregate results with the local Node harness. Keep external skill-creator viewers optional; they are presentation adapters, not this repo's validation path.
+
+```text
+node tools/run-research-backtest.mjs --clean --json
+node tools/run-research-backtest.mjs --workspace research-proof-workspace --iteration <iteration> --answers <answers.json> --variant <variant> --expected-ids <ids> --json
+node tools/compare-external-backtests.mjs --iteration <iteration> --baseline <baseline-variant> --out <comparison.md>
 ```
 
 The aggregator should emit both `benchmark.json` and `benchmark.md`; keep both with the iteration artifacts.
+
+Run the dependency-free structural validator before behavioral review:
+
+```text
+node tools/validate-research-skill.mjs
+```
+
+Run the local deterministic backtest to validate the harness and grading artifacts:
+
+```text
+node tools/run-research-backtest.mjs --clean
+```
 
 ## Reliability Rule
 

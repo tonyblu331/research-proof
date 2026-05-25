@@ -1,7 +1,7 @@
 {
   "name": "research-proof-plugin",
-  "description": "Falsifiable research planning for AI agents: pressure-test claims, freeze evaluators, build proof ladders, and maintain proof ledgers.",
-  "version": "1.0.0",
+  "description": "Falsifiable research planning for AI agents: pressure-test claims, freeze evaluators, use AI-lab and medical evidence patterns, build proof ladders, and maintain proof ledgers.",
+  "version": "1.1.0",
   "author": {
     "name": "Tony Blanco"
   },
@@ -22,6 +22,8 @@
     "falsification",
     "verification",
     "scientific-method",
+    "medical-research",
+    "evidence-certainty",
     "prompt-engineering",
     "autonomous-agents"
   ]

@@ -4,14 +4,14 @@
     "name": "Tony Blanco"
   },
   "metadata": {
-    "description": "Claude Code plugins for falsifiable research planning, evaluator discipline, proof ladders, and proof ledgers."
+    "description": "Claude Code plugins for falsifiable research planning, AI-lab workflow patterns, medical evidence certainty, proof ladders, and proof ledgers."
   },
   "plugins": [
     {
       "name": "research-proof-plugin",
       "source": "./plugins/research-proof-plugin",
-      "description": "Pressure-test research claims with falsifiable verifier plans, proof ladders, and proof ledgers.",
-      "version": "1.0.0",
+      "description": "Pressure-test research claims with falsifiable verifier plans, AI-lab workflow patterns, medical evidence certainty, proof ladders, and proof ledgers.",
+      "version": "1.1.0",
       "author": {
         "name": "Tony Blanco"
       },
@@ -45,6 +45,8 @@
         "falsification",
         "verification",
         "scientific-method",
+        "medical-research",
+        "evidence-certainty",
         "prompt-engineering",
         "autonomous-agents"
       ]

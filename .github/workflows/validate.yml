@@ -14,16 +14,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          python-version: '3.11'
+          node-version: '22'
 
-      - name: Run structural backtest
-        run: python skills/research-proof/scripts/backtest_research_skill.py
+      - name: Run structural validation
+        run: node tools/validate-research-skill.mjs
 
       - name: Validate eval JSON
-        run: python -m json.tool skills/research-proof/evals/evals.json > /dev/null
+        run: node -e "JSON.parse(require('fs').readFileSync('skills/research-proof/evals/evals.json', 'utf8'))"
 
-      - name: Compile helper scripts
-        run: python -m py_compile skills/research-proof/scripts/backtest_research_skill.py skills/research-proof/scripts/prepare_behavioral_workspace.py
+      - name: Validate skill-creator export
+        run: node tools/export-skill-creator-evals.mjs --check
+
+      - name: Smoke external eval pack
+        run: node tools/create-research-eval-pack.mjs --ids 14,15 --prompt-variant typo --out research-proof-workspace/eval-pack-smoke.json
+
+      - name: Run deterministic backtest harness
+        run: node tools/run-research-backtest.mjs --clean --json
+
+      - name: Rate 12/10 maturity gates
+        run: node tools/rate-research-skill.mjs --out research-proof-workspace/12-10-gates.md

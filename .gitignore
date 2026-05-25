@@ -1,11 +1,6 @@
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
 research-proof-workspace/
 *-workspace/
+.atl/
 benchmark.json
 benchmark.md
 review.html
