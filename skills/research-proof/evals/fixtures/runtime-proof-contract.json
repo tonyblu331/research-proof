@@ -1,0 +1,40 @@
+{
+  "headlineStatus": "IMPLEMENTED-RUNTIME-MOMENT-VISIBILITY",
+  "rowLabel": "visibility-moments",
+  "visibilityMomentInspection": {
+    "available": false,
+    "mode": "unavailable-proof-6-runtime-removed",
+    "bytes": 0,
+    "texture": null,
+    "evidenceStatus": "OPEN",
+    "visibilityDepthEnabled": false,
+    "stats": {
+      "sampleCount": 0,
+      "finiteSampleCount": 0,
+      "hitSampleCount": 0
+    }
+  },
+  "finalVisible": {
+    "actualWrongSideColorRatio": 0.7562,
+    "cpuRuntimeWrongRatioMean": 0.0231,
+    "cpuSurfaceRuntimeWrongRatioMean": 0.1298,
+    "status": "OPEN-CPU-RENDER-METRIC-MISMATCH",
+    "finalVisibleMaterialGate": "OPEN-FINAL-VISIBLE-COLOR-MAPPING-PRESSURE",
+    "renderSplitsAvailable": []
+  },
+  "evidenceReaderSnippet": "if (typeof runtimeContext.visibilityProvider.getVisibilityDepthInfo === 'function') { return readVisibilityDepthInfo(); }",
+  "projectionClaim": "each fragment computes all 9 SH coefficients and then selects one",
+  "localProjectionShape": "RenderTarget(SH_COEFFICIENTS,totalProbes); coefficient selected from uv.x; each coefficient pixel loops the cubemap once",
+  "externalReference": {
+    "name": "External Reference A",
+    "validScope": ["reference atlas/layout shape", "packed resource-layout direction", "engine-port structure"],
+    "invalidScope": ["local moment-backed visibility implemented", "local final-output closure"]
+  },
+  "runStatus": {
+    "buildExecuted": false,
+    "testsExecuted": [],
+    "screenshotsGenerated": [],
+    "timestampQueriesAvailable": false,
+    "wallClockFallback": false
+  }
+}

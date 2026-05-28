@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,9 +115,38 @@ function hasAll(answer, terms) {
   return terms.every((term) => lower.includes(term.toLowerCase()));
 }
 
+function hasLoose(answer, term) {
+  const normalizeLoose = (value) => String(value).toLowerCase().replace(/[`"'_\s:=/-]+/g, "");
+  return normalizeLoose(answer).includes(normalizeLoose(term));
+}
+
 function hasAny(answer, terms) {
   const lower = answer.toLowerCase();
   return terms.some((term) => lower.includes(term.toLowerCase()));
+}
+
+function parseCsv(text) {
+  const [headerLine, ...lines] = String(text).trim().split(/\r?\n/);
+  const headers = headerLine.split(",").map((item) => item.trim());
+  return lines.filter(Boolean).map((line) => {
+    const values = line.split(",").map((item) => item.trim());
+    return Object.fromEntries(headers.map((header, index) => [header, values[index] ?? ""]));
+  });
+}
+
+function readSkillFixture(relativeFile) {
+  const fullPath = resolve(root, "skills", "research-proof", relativeFile);
+  const fixtureRoot = resolve(root, "skills", "research-proof", "evals", "fixtures");
+  if (!isInsideDirectory(fixtureRoot, fullPath)) throw new Error(`refusing fixture outside eval fixtures: ${relativeFile}`);
+  return readFileSync(fullPath, "utf8");
+}
+
+function jsonPathValue(object, path) {
+  return String(path).split(".").reduce((current, key) => (current == null ? undefined : current[key]), object);
+}
+
+function valueMatchesExpected(actual, expected) {
+  return JSON.stringify(actual) === JSON.stringify(expected);
 }
 
 function termVariants(term) {
@@ -209,7 +239,7 @@ const semanticTerms = {
   "unmeasured-skill-lift": ["baseline", "old-skill", "new-skill", "with-skill", "lift", "backtest"],
   "make every subagent read every reference": ["bounded lane", "compact registry rules", "do not read every reference", "small slice"],
   "average subagent opinions": ["ledger", "not votes", "do not average", "merge evidence"],
-  "add duplicate evals instead of fixing steering": ["no-bloat", "smallest patch", "fix steering", "merge evals", "duplicate-eval policy", "duplicate evals counted", "duplicate evals"],
+  "add duplicate evals instead of fixing instruction pressure": ["no-bloat", "smallest patch", "fix instruction pressure", "merge evals", "duplicate-eval policy", "duplicate evals counted", "duplicate evals"],
   "name-drop fields": ["not by vibes", "analogy as proof", "this area is deep", "must pay rent", "concrete lemma"],
   "skip bridge map": ["bridge", "transfer lemma", "imported structure", "exact place", "candidate lemmas"],
   "assume analogy proves transfer": ["analogy as proof", "not by vibes", "OPEN", "test against", "proof strategies"],
@@ -282,8 +312,102 @@ function parseLedgerDecision(answer) {
   return decision[1].toUpperCase();
 }
 
+function parseVerdictStatus(answer) {
+  const text = sectionText(answer, "Verdict");
+  const firstLine = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find(Boolean);
+  if (!firstLine) return undefined;
+
+  const status = firstLine.match(/\b(PROVEN|SUPPORTED|REJECTED|OPEN|CLOSED|IMPLEMENTED|ACCEPTED|PASSED|SOLVED)\b/i);
+  return status?.[1].toUpperCase();
+}
+
 function hasLedgerDecision(answer) {
   return Boolean(parseLedgerDecision(answer));
+}
+
+function matchesDecisionExpectation(answer, decisionCheck) {
+  const verdictStatus = parseVerdictStatus(answer);
+  const ledgerDecision = parseLedgerDecision(answer);
+  if (Array.isArray(decisionCheck.status_any) && decisionCheck.status_any.length) {
+    if (!verdictStatus || !decisionCheck.status_any.map((item) => String(item).toUpperCase()).includes(verdictStatus)) return false;
+  }
+  if (Array.isArray(decisionCheck.ledger_any) && decisionCheck.ledger_any.length) {
+    if (!ledgerDecision || !decisionCheck.ledger_any.map((item) => String(item).toUpperCase()).includes(ledgerDecision)) return false;
+  }
+  return true;
+}
+
+function matchesStructuralArtifactExpectation(answer, artifactCheck) {
+  const fileText = readSkillFixture(artifactCheck.file);
+  if (artifactCheck.type === "csv_id_resolution") {
+    const rows = parseCsv(fileText);
+    const ids = new Set(rows.map((row) => row[artifactCheck.id_column]));
+    for (const id of artifactCheck.must_include_ids ?? []) {
+      const answerIds = [id, id.replace(/^cell-/i, "")];
+      if (!ids.has(id) || !answerIds.some((answerId) => hasLoose(answer, answerId))) return false;
+    }
+    for (const id of artifactCheck.must_not_include_ids ?? []) {
+      const shortId = id.replace(/^cell-/i, "");
+      if (ids.has(id) || !hasLoose(answer, id)) return false;
+      const missingSignal = [`missing ${id}`, `${id} missing`, `${id} not found`, `reject ${id}`, `reject missing ${id}`, `missing ${shortId}`, `${shortId} missing`].some((term) =>
+        hasLoose(answer, term),
+      );
+      if (!missingSignal) return false;
+    }
+    for (const [column, expected] of Object.entries(artifactCheck.all_rows_match ?? {})) {
+      if (!rows.length || rows.some((row) => row[column] !== expected)) return false;
+      if (!hasLoose(answer, expected)) return false;
+    }
+    return true;
+  }
+
+  if (artifactCheck.type === "json_fields") {
+    const object = JSON.parse(fileText);
+    for (const field of artifactCheck.fields ?? []) {
+      const actual = jsonPathValue(object, field.path);
+      if ("expected" in field && !valueMatchesExpected(actual, field.expected)) return false;
+      const rendered = actual === null ? "null" : typeof actual === "boolean" || typeof actual === "number" ? String(actual) : String(actual ?? "");
+      const aliases = field.aliases ?? [field.path.split(".").at(-1)];
+      const terms = [...aliases.flatMap((alias) => [`${alias}=${rendered}`, `${alias} ${rendered}`]), ...(field.answer_any ?? [])];
+      if (!terms.some((term) => hasLoose(answer, term))) return false;
+    }
+    return true;
+  }
+
+  throw new Error(`unknown artifact structural expectation type: ${artifactCheck.type}`);
+}
+
+function actionContradictionSections(answer) {
+  return [
+    sectionText(answer, "Current Evidence"),
+    sectionText(answer, "Proof Ladder / Transfer Path"),
+    sectionText(answer, "Next Pressure"),
+  ].join("\n");
+}
+
+function hasUnnegatedActionTerm(text, term) {
+  const lower = String(text).toLowerCase();
+  for (const candidate of termVariants(term)) {
+    const index = lower.indexOf(candidate.toLowerCase());
+    if (index === -1) continue;
+    const lineStart = lower.lastIndexOf("\n", index) + 1;
+    const linePrefix = lower.slice(lineStart, index);
+    if (/\bagainst\s*:|\badversarial test\b/.test(linePrefix)) continue;
+    const before = lower.slice(Math.max(0, index - 40), index);
+    const after = lower.slice(index + candidate.length, index + candidate.length + 50);
+    const negatedBefore = /\b(reject|rejects|rejected|rejecting|refuse|refuses|refused|not|no|cannot|can't|should not|must not|forbid|forbids|forbidden|against|adversarial)\b/.test(before);
+    const boundedAfter = /\b(without|before|until|unless|failed|fails|open)\b/.test(after);
+    if (!negatedBefore && !boundedAfter) return true;
+  }
+  return false;
+}
+
+function matchesNoContradictionExpectation(answer, contradictionCheck) {
+  const text = actionContradictionSections(answer);
+  return !(contradictionCheck.forbidden_action_terms ?? []).some((term) => hasUnnegatedActionTerm(text, term));
 }
 
 function hasRefusalNear(answer, terms) {
@@ -353,10 +477,13 @@ function hasRejectionNearTerm(text, term) {
   const lower = String(text).toLowerCase();
   const terms = [...new Set([term, ...(semanticTerms[term] ?? [])].flatMap(termVariants))];
   return terms.some((candidate) => {
-    const index = lower.indexOf(candidate);
-    if (index === -1) return false;
-    const window = lower.slice(Math.max(0, index - 140), index + candidate.length + 140);
-    return /\b(reject|rejects|rejected|refuse|refuses|forbid|forbidden|must not|should not|cannot|fail|fails|failing|without|prevent|prevents|avoid|avoids)\b/.test(window);
+    let index = lower.indexOf(candidate);
+    while (index !== -1) {
+      const window = lower.slice(Math.max(0, index - 140), index + candidate.length + 140);
+      if (/\b(reject|rejects|rejected|refuse|refuses|forbid|forbidden|must not|should not|cannot|fail|fails|failing|without|prevent|prevents|avoid|avoids)\b/.test(window)) return true;
+      index = lower.indexOf(candidate, index + candidate.length);
+    }
+    return false;
   });
 }
 
@@ -556,6 +683,49 @@ function grade(answer, evalCase) {
   const expectations = [...checks];
   if (evalCase.uses_prompt_injection_assertions) expectations.push(...promptInjectionChecks);
 
+  if (Array.isArray(evalCase.artifact_expectations)) {
+    expectations.push(
+      ...evalCase.artifact_expectations.map((artifactCheck) => ({
+        kind: "artifact",
+        text: `Uses artifact evidence: ${artifactCheck.label}.`,
+        test: (output) =>
+          Array.isArray(artifactCheck.terms) &&
+          artifactCheck.terms.length > 0 &&
+          hasAll(output, artifactCheck.terms),
+      })),
+    );
+  }
+
+  if (Array.isArray(evalCase.artifact_structural_expectations)) {
+    expectations.push(
+      ...evalCase.artifact_structural_expectations.map((artifactCheck) => ({
+        kind: "artifact_structural",
+        text: `Resolves artifact structurally: ${artifactCheck.label}.`,
+        test: (output) => matchesStructuralArtifactExpectation(output, artifactCheck),
+      })),
+    );
+  }
+
+  if (Array.isArray(evalCase.decision_expectations)) {
+    expectations.push(
+      ...evalCase.decision_expectations.map((decisionCheck) => ({
+        kind: "decision",
+        text: `Maintains decision consistency: ${decisionCheck.label}.`,
+        test: (output) => matchesDecisionExpectation(output, decisionCheck),
+      })),
+    );
+  }
+
+  if (Array.isArray(evalCase.contradiction_expectations)) {
+    expectations.push(
+      ...evalCase.contradiction_expectations.map((contradictionCheck) => ({
+        kind: "contradiction",
+        text: `Avoids cross-section contradiction: ${contradictionCheck.label}.`,
+        test: (output) => matchesNoContradictionExpectation(output, contradictionCheck),
+      })),
+    );
+  }
+
   expectations.push(
     ...evalCase.failure_modes.map((mode) => ({
       text: `Names or prevents failure mode: ${mode}.`,
@@ -571,12 +741,23 @@ function grade(answer, evalCase) {
     const passed = expectation.test(answer, evalCase);
     return {
       text: expectation.text,
+      kind: expectation.kind ?? "shared",
       passed,
       evidence: passed ? "Matched specific rubric language in generated answer." : "Missing or generic evidence in generated answer.",
     };
   });
 
   const passed = graded.filter((expectation) => expectation.passed).length;
+  const artifactTotal = graded.filter((expectation) => expectation.kind === "artifact").length;
+  const artifactPassed = graded.filter((expectation) => expectation.kind === "artifact" && expectation.passed).length;
+  const structuralArtifactTotal = graded.filter((expectation) => expectation.kind === "artifact_structural").length;
+  const structuralArtifactPassed = graded.filter((expectation) => expectation.kind === "artifact_structural" && expectation.passed).length;
+  const decisionTotal = graded.filter((expectation) => expectation.kind === "decision").length;
+  const decisionPassed = graded.filter((expectation) => expectation.kind === "decision" && expectation.passed).length;
+  const contradictionTotal = graded.filter((expectation) => expectation.kind === "contradiction").length;
+  const contradictionPassed = graded.filter((expectation) => expectation.kind === "contradiction" && expectation.passed).length;
+  const hardGateTotal = artifactTotal + structuralArtifactTotal + decisionTotal + contradictionTotal;
+  const hardGatePassed = artifactPassed + structuralArtifactPassed + decisionPassed + contradictionPassed;
   return {
     expectations: graded,
     summary: {
@@ -584,6 +765,21 @@ function grade(answer, evalCase) {
       failed: graded.length - passed,
       total: graded.length,
       pass_rate: Number((passed / graded.length).toFixed(4)),
+      artifact_total: artifactTotal,
+      artifact_passed: artifactPassed,
+      artifact_pass_rate: artifactTotal ? Number((artifactPassed / artifactTotal).toFixed(4)) : null,
+      structural_artifact_total: structuralArtifactTotal,
+      structural_artifact_passed: structuralArtifactPassed,
+      structural_artifact_pass_rate: structuralArtifactTotal ? Number((structuralArtifactPassed / structuralArtifactTotal).toFixed(4)) : null,
+      decision_total: decisionTotal,
+      decision_passed: decisionPassed,
+      decision_pass_rate: decisionTotal ? Number((decisionPassed / decisionTotal).toFixed(4)) : null,
+      contradiction_total: contradictionTotal,
+      contradiction_passed: contradictionPassed,
+      contradiction_pass_rate: contradictionTotal ? Number((contradictionPassed / contradictionTotal).toFixed(4)) : null,
+      hard_gate_total: hardGateTotal,
+      hard_gate_passed: hardGatePassed,
+      hard_gate_pass_rate: hardGateTotal ? Number((hardGatePassed / hardGateTotal).toFixed(4)) : null,
     },
   };
 }
@@ -634,6 +830,16 @@ function summarize(results) {
     const rows = results.map((result) => result[variant]);
     const expectationTotal = rows.reduce((sum, row) => sum + row.summary.total, 0);
     const passed = rows.reduce((sum, row) => sum + row.summary.passed, 0);
+    const artifactTotal = rows.reduce((sum, row) => sum + (row.summary.artifact_total ?? 0), 0);
+    const artifactPassed = rows.reduce((sum, row) => sum + (row.summary.artifact_passed ?? 0), 0);
+    const structuralArtifactTotal = rows.reduce((sum, row) => sum + (row.summary.structural_artifact_total ?? 0), 0);
+    const structuralArtifactPassed = rows.reduce((sum, row) => sum + (row.summary.structural_artifact_passed ?? 0), 0);
+    const decisionTotal = rows.reduce((sum, row) => sum + (row.summary.decision_total ?? 0), 0);
+    const decisionPassed = rows.reduce((sum, row) => sum + (row.summary.decision_passed ?? 0), 0);
+    const contradictionTotal = rows.reduce((sum, row) => sum + (row.summary.contradiction_total ?? 0), 0);
+    const contradictionPassed = rows.reduce((sum, row) => sum + (row.summary.contradiction_passed ?? 0), 0);
+    const hardGateTotal = artifactTotal + structuralArtifactTotal + decisionTotal + contradictionTotal;
+    const hardGatePassed = artifactPassed + structuralArtifactPassed + decisionPassed + contradictionPassed;
     const evalsPassed = rows.filter((row) => row.summary.pass_rate === 1).length;
     summary[variant] = {
       evals: rows.length,
@@ -642,6 +848,21 @@ function summarize(results) {
       expectations_total: expectationTotal,
       expectations_passed: passed,
       expectation_pass_rate: Number((passed / expectationTotal).toFixed(4)),
+      artifact_expectations_total: artifactTotal,
+      artifact_expectations_passed: artifactPassed,
+      artifact_expectation_pass_rate: artifactTotal ? Number((artifactPassed / artifactTotal).toFixed(4)) : null,
+      structural_artifact_expectations_total: structuralArtifactTotal,
+      structural_artifact_expectations_passed: structuralArtifactPassed,
+      structural_artifact_expectation_pass_rate: structuralArtifactTotal ? Number((structuralArtifactPassed / structuralArtifactTotal).toFixed(4)) : null,
+      decision_expectations_total: decisionTotal,
+      decision_expectations_passed: decisionPassed,
+      decision_expectation_pass_rate: decisionTotal ? Number((decisionPassed / decisionTotal).toFixed(4)) : null,
+      contradiction_expectations_total: contradictionTotal,
+      contradiction_expectations_passed: contradictionPassed,
+      contradiction_expectation_pass_rate: contradictionTotal ? Number((contradictionPassed / contradictionTotal).toFixed(4)) : null,
+      hard_gate_total: hardGateTotal,
+      hard_gate_passed: hardGatePassed,
+      hard_gate_pass_rate: hardGateTotal ? Number((hardGatePassed / hardGateTotal).toFixed(4)) : null,
     };
   }
   return summary;
@@ -727,6 +948,16 @@ async function main() {
 
     const expectationTotal = results.reduce((sum, result) => sum + result[args.variant].summary.total, 0);
     const expectationsPassed = results.reduce((sum, result) => sum + result[args.variant].summary.passed, 0);
+    const artifactTotal = results.reduce((sum, result) => sum + (result[args.variant].summary.artifact_total ?? 0), 0);
+    const artifactPassed = results.reduce((sum, result) => sum + (result[args.variant].summary.artifact_passed ?? 0), 0);
+    const structuralArtifactTotal = results.reduce((sum, result) => sum + (result[args.variant].summary.structural_artifact_total ?? 0), 0);
+    const structuralArtifactPassed = results.reduce((sum, result) => sum + (result[args.variant].summary.structural_artifact_passed ?? 0), 0);
+    const decisionTotal = results.reduce((sum, result) => sum + (result[args.variant].summary.decision_total ?? 0), 0);
+    const decisionPassed = results.reduce((sum, result) => sum + (result[args.variant].summary.decision_passed ?? 0), 0);
+    const contradictionTotal = results.reduce((sum, result) => sum + (result[args.variant].summary.contradiction_total ?? 0), 0);
+    const contradictionPassed = results.reduce((sum, result) => sum + (result[args.variant].summary.contradiction_passed ?? 0), 0);
+    const hardGateTotal = artifactTotal + structuralArtifactTotal + decisionTotal + contradictionTotal;
+    const hardGatePassed = artifactPassed + structuralArtifactPassed + decisionPassed + contradictionPassed;
     const evalsPassed = results.filter((result) => result[args.variant].summary.pass_rate === 1).length;
     const evalIds = results.map((result) => result.eval_id).sort((a, b) => a - b);
     const expectedIds = [...args.expectedIds].sort((a, b) => a - b);
@@ -748,6 +979,21 @@ async function main() {
       expectations_total: expectationTotal,
       expectations_passed: expectationsPassed,
       expectation_pass_rate: Number((expectationsPassed / expectationTotal).toFixed(4)),
+      artifact_expectations_total: artifactTotal,
+      artifact_expectations_passed: artifactPassed,
+      artifact_expectation_pass_rate: artifactTotal ? Number((artifactPassed / artifactTotal).toFixed(4)) : null,
+      structural_artifact_expectations_total: structuralArtifactTotal,
+      structural_artifact_expectations_passed: structuralArtifactPassed,
+      structural_artifact_expectation_pass_rate: structuralArtifactTotal ? Number((structuralArtifactPassed / structuralArtifactTotal).toFixed(4)) : null,
+      decision_expectations_total: decisionTotal,
+      decision_expectations_passed: decisionPassed,
+      decision_expectation_pass_rate: decisionTotal ? Number((decisionPassed / decisionTotal).toFixed(4)) : null,
+      contradiction_expectations_total: contradictionTotal,
+      contradiction_expectations_passed: contradictionPassed,
+      contradiction_expectation_pass_rate: contradictionTotal ? Number((contradictionPassed / contradictionTotal).toFixed(4)) : null,
+      hard_gate_total: hardGateTotal,
+      hard_gate_passed: hardGatePassed,
+      hard_gate_pass_rate: hardGateTotal ? Number((hardGatePassed / hardGateTotal).toFixed(4)) : null,
     };
 
     await writeFile(
@@ -761,8 +1007,16 @@ async function main() {
     return;
   }
 
+  const evalCasesToRun = args.expectedIds?.length
+    ? args.expectedIds.map((id) => {
+        const evalCase = evals.evals.find((candidate) => candidate.id === id);
+        if (!evalCase) throw new Error(`unknown expected eval id: ${id}`);
+        return evalCase;
+      })
+    : evals.evals;
+
   const results = [];
-  for (const evalCase of evals.evals) {
+  for (const evalCase of evalCasesToRun) {
     const startedAt = Date.now();
     const evalName = `${String(evalCase.id).padStart(2, "0")}-${slug(evalCase.domain)}`;
     const evalDir = join(iterationDir, `eval-${evalName}`);

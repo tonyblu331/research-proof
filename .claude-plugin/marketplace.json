@@ -11,7 +11,6 @@
       "name": "research-proof-plugin",
       "source": "./plugins/research-proof-plugin",
       "description": "Pressure-test research claims with falsifiable verifier plans, AI-lab workflow patterns, medical evidence certainty, proof ladders, and proof ledgers.",
-      "version": "1.1.0",
       "author": {
         "name": "Tony Blanco"
       },

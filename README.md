@@ -1,27 +1,26 @@
 # Research Proof
 
-[![Claude Code Marketplace](https://img.shields.io/badge/Claude%20Code-marketplace-5A32A3?logo=anthropic&logoColor=white)](#claude-code-plugin)
+[![Claude Code Marketplace](https://img.shields.io/badge/Claude%20Code-marketplace-5A32A3?logo=anthropic&logoColor=white)](#claude-code-plugin) [![skills.sh](https://skills.sh/b/tonyblu331/research-proof)](https://skills.sh/tonyblu331/research-proof)
 
 Pressure-test research claims with falsifiable evidence plans, adversarial checks, frozen verifiers, evidence certainty checks, and proof ledgers.
 
-Research Proof distills verifier patterns from Google DeepMind / Google Research, OpenAI, Anthropic, university research traditions, systems engineering, design science, causal inference, open science, and medical research disciplines such as PRISMA, SPIRIT, and GRADE. Those references shape the method; they are not treated as proof of any user claim.
+The mental model behind Research Proof is simple: treat every promising idea as a claim under test. Borrow the habits that strong research teams use across AI, medicine, mathematics, engineering, and design: freeze the verifier, separate evidence from interpretation, search for counterexamples, charge hidden costs, and only upgrade confidence when the claim survives transfer pressure. References shape the method; they are never treated as proof of a user claim.
 
 ![Research Proof image generation concept](assets/research-proof-imagegen.png)
 
-## Release 1.1.0
+## Release 1.2.0
 
-This release turns Research Proof from a useful proof-ledger skill into a measured research-verification harness.
+This release hardens Research Proof around evidence contracts: report status must be derived from raw evidence, artifact references must resolve structurally, and OPEN/REFINE sections cannot smuggle CLOSED/IMPLEMENTED claims elsewhere.
 
 Highlights:
 
-- Consolidated `skills/research-proof` as the source of truth and made the plugin skill copy a drift-checked distribution artifact.
-- Removed Python from repo validation and replaced it with dependency-free Node tooling.
-- Added compact source-pattern references from AI labs, universities, systems engineering, medicine, causal inference, design science, graphics, mechanistic audits, and live-source research.
-- Expanded eval coverage for clinical AI readiness, prompt injection, cross-domain mathematical transfer, design research, observational causality, tool-grounded science, and skill/delegation steering.
-- Added external-agent eval packs, old-vs-new comparison, full-suite typo-heavy grading, and a 12/10 maturity gate.
-- Verified the full noisy external suite at `396 / 437` expectations, `90.6%`, with `+89.5%` lift over clean baseline.
+- Expanded the eval suite to 33 cases with structural artifact checks and contradiction scanning.
+- Added summary-only capability-gate evidence under `evaluation/capability-gates/`.
+- Kept the runtime skill under 100 lines while moving detail into progressive references.
+- Bumped the Claude Code plugin manifest to `1.2.0`; the marketplace entry intentionally omits its own version so `plugin.json` is the single version source.
+- Verified all local release checks while keeping the caveat clear: this is repo evidence, not proof of universal transfer.
 
-See [`CHANGELOG.md`](CHANGELOG.md) for the detailed release notes and verification commands.
+See [`CHANGELOG.md`](CHANGELOG.md) for detailed release notes and verification commands.
 
 ## Install
 
@@ -205,20 +204,20 @@ node .\tools\run-research-backtest.mjs --clean
 Grade external agent answers and compare variants:
 
 ```powershell
-node .\tools\run-research-backtest.mjs --workspace research-proof-workspace --iteration external-agent-sample --clean --answers evaluation\external-agent-sample\baseline-clean.json --variant clean_baseline --expected-ids 11,14,15,17,19,21,23,24,26,27 --json
-node .\tools\run-research-backtest.mjs --workspace research-proof-workspace --iteration external-agent-sample --answers evaluation\external-agent-sample\with-skill-compact-rules.json --variant with_skill_compact_rules --expected-ids 11,14,15,17,19,21,23,24,26,27 --json
-node .\tools\compare-external-backtests.mjs --iteration external-agent-sample --baseline clean_baseline --out evaluation\external-agent-sample\comparison.md
+node .\tools\run-research-backtest.mjs --workspace research-proof-workspace --iteration external-agent-sample --clean --answers research-proof-workspace\answers\baseline-clean.json --variant clean_baseline --expected-ids 0,1,2 --json
+node .\tools\run-research-backtest.mjs --workspace research-proof-workspace --iteration external-agent-sample --answers research-proof-workspace\answers\with-skill.json --variant with_skill_compact_rules --expected-ids 0,1,2 --json
+node .\tools\compare-external-backtests.mjs --iteration external-agent-sample --baseline clean_baseline --out research-proof-workspace\external-agent-comparison.md
 ```
 
-Rate the 12/10 maturity gates:
+Rate the release checks:
 
 ```powershell
-node .\tools\rate-research-skill.mjs --out evaluation\12-10-gate-report.md
+node .\tools\rate-research-skill.mjs --out research-proof-workspace\capability-gate-report.md
 ```
 
 CI runs these checks on every push and pull request.
 
-The eval harness is intentionally compact: `skills/research-proof/evals/evals.json` is the case source of truth, `references/backtest-cases.md` defines grading rules and failure labels, `references/skill-steering.md` defines delegation and 12/10 maturity gates, `tools/create-research-eval-pack.mjs` packages external-agent runs without duplicating cases, and `tools/export-skill-creator-evals.mjs` adapts the suite for external benchmark tooling.
+The eval harness is intentionally compact: `skills/research-proof/evals/evals.json` is the case source of truth, `references/backtest-cases.md` defines grading rules and failure labels, `references/skill-improvement.md` defines delegation and release checks, `evaluation/capability-gates/` stores summary-only release evidence, `tools/create-research-eval-pack.mjs` packages external-agent runs without duplicating cases, and `tools/export-skill-creator-evals.mjs` adapts the suite for external benchmark tooling.
 
 ## Repository Layout
 
@@ -238,6 +237,7 @@ tools/
   run-research-backtest.mjs
   validate-research-skill.mjs
 .github/
+evaluation/capability-gates/
 ```
 
 ## License

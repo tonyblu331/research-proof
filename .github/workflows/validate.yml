@@ -34,5 +34,5 @@ jobs:
       - name: Run deterministic backtest harness
         run: node tools/run-research-backtest.mjs --clean --json
 
-      - name: Rate 12/10 maturity gates
-        run: node tools/rate-research-skill.mjs --out research-proof-workspace/12-10-gates.md
+      - name: Rate capability gates
+        run: node tools/rate-research-skill.mjs --out research-proof-workspace/capability-gates.md

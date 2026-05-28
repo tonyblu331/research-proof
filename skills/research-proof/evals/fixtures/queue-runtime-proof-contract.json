@@ -1,0 +1,42 @@
+{
+  "headlineStatus": "CLOSED-RUNTIME-WORKER-FEATURE",
+  "rowLabel": "runtime-worker-feature",
+  "workerInspection": {
+    "available": false,
+    "mode": "disabled-scaffold",
+    "enabled": false,
+    "deployedRevision": null,
+    "processedJobCount": 0,
+    "successfulRetryCount": 0,
+    "deadLetterDrainCount": 0,
+    "evidenceStatus": "OPEN",
+    "stats": {
+      "sampleCount": 0,
+      "finiteLatencySamples": 0,
+      "successfulJobSamples": 0
+    }
+  },
+  "userVisibleMetric": {
+    "claimedIncidentReduction": 0.72,
+    "queueInternalRetrySuccessRate": null,
+    "supportTicketReduction": 0.01,
+    "status": "OPEN-WORKER-USER-METRIC-MISMATCH",
+    "finalUserImpactGate": "OPEN-NO-DEPLOYED-USER-VISIBLE-EVIDENCE",
+    "splitsAvailable": ["unit-only"]
+  },
+  "evidenceReaderSnippet": "if (typeof workerRuntime.getRetryWorkerInfo === 'function') { return readRetryWorkerInfo(); }",
+  "optimizationClaim": "the worker removes duplicate queue scans by batching all retry states in one pass",
+  "localRuntimeShape": "cron tick scans pending jobs once per retry state; disabled scaffold currently performs no production scan; no deploy or readback was run",
+  "externalReference": {
+    "name": "External Reference B",
+    "validScope": ["worker architecture shape", "failure-queue terminology", "batching direction"],
+    "invalidScope": ["local worker deployed", "local incident reduction closed", "local processing gate passed"]
+  },
+  "runStatus": {
+    "buildExecuted": false,
+    "testsExecuted": [],
+    "deploymentExecuted": false,
+    "productionReadbackExecuted": false,
+    "dashboardScreenshotsGenerated": []
+  }
+}

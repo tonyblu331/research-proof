@@ -108,8 +108,11 @@ Use when papers, official articles, documentation, or prior work determine the b
 Require:
 
 - Source date and link for each important external claim.
+- For systematic or literature-heavy work, record the search strategy, databases or source families, inclusion/exclusion criteria, deduplication rule, screening decision, and synthesis method.
+- For citation-backed claims, verify identifiers or metadata when possible and check that the cited source actually supports the sentence, not merely the topic.
 - Separation between direct evidence, author interpretation, and your inference.
 - At least one source that could weaken the favorite idea.
+- For quantitative claims, check whether the design, statistical test, assumptions, missing-data handling, effect sizes, confidence intervals, and practical significance support the conclusion.
 - Current-source check for fast-moving claims.
 
 ## Mechanistic Audit
@@ -196,6 +199,45 @@ Require:
 - Sensitivity analysis, placebo or negative-control tests, replication or transfer to a new setting, and the reviewer or review authority that can accept the causal assumptions.
 
 Reject if the output treats prediction as causation, relies on one uncontrolled association, changes the estimand after seeing results, or recommends action without naming the causal assumptions.
+
+## Causal Attribution Review
+
+Use when a hard debugging case, production regression, benchmark anomaly, leakage concern, graphics artifact, numerical residual, or multi-agent synthesis miss has many plausible contributors and the work can drift into narrative branching.
+
+Pattern:
+
+```text
+bounded lateral aperture -> evidence contract -> pre-D1 candidate map -> ranking basis -> canonical evidence rows -> attribution cube -> observed-evidence causal ranking -> minimal discriminator -> residual guard -> synthesis
+```
+
+Require:
+
+- A bounded lateral aperture: weird or cross-domain hypotheses are welcome, but each branch must state a mechanism, expected signature, kill condition, and the row dimensions needed to test it.
+- Canonical evidence rows before broad prose. Name the row grain, dimensions, derived measures, and missing fields.
+- An attribution cube that can rank contributors by observed pressure, not by plausibility alone.
+- A **Pre-D1 Candidate Map** instead of a naked suspicion ranking. Each ordered list must name its **Ranking Basis**: `information_gain_priority`, `symptom_fit_prior`, `operational_check_order`, or `observed_evidence_ranking`.
+- A strict distinction between **pre-D1 ordering** and **causal ranking**. Only `observed_evidence_ranking` may be called causal; all other bases are triage only.
+- If the basis is `observed_evidence_ranking`, cite resolvable **EvidenceRefs**: canonical row ids, attribution-cube cells/results, D1 output, or negative-control/ablation evidence. If an EvidenceRef cannot be resolved to provided artifacts or rows, downgrade the basis.
+- Artifact rows with `d1_status=not_run` may support suspicion or operational priority, not causal `observed_evidence_ranking`.
+- A minimal discriminator `D1` that separates the top hypotheses with the cheapest decisive observation, ablation, counterfactual, or negative control.
+- `DOMINANT_UNKNOWN_PENDING_D1` when the first discriminator is required before naming a dominant contributor.
+- A residual guard that preserves secondary contributors after the dominant bucket is isolated.
+- A promotion gate before runtime/design changes: dominant win, residual guard, negative controls, and no unresolved evidence-contract violation.
+
+Reject if the output names a dominant cause from a clean-looking table that contains only priors, uses a numbered pre-D1 list without a Ranking Basis, treats `symptom_fit_prior` or `operational_check_order` as causality, launders `observed_evidence_ranking` with fake/unresolved EvidenceRefs, averages subagent opinions as evidence, hides uncertainty behind confident prose, erases residual risks, or turns lateral ideas into untestable narratives.
+
+### Runtime proof-report contract
+
+Use this sub-check when a report claims a runtime feature, renderer path, benchmark fix, or harness status is implemented/closed.
+
+- Derive every headline status from raw evidence fields; if the object says unavailable, disabled, zero bytes, null texture, OPEN, or not-run, the headline must downgrade.
+- Name rows by the active algorithm, not the roadmap. Use labels like `scalar-validity-weighted` or `visibility-scaffold-disabled` until the feature gate proves real moment-backed data.
+- Feature gates must check existence, mode, non-null resources, positive byte/sample counts, and a behavioral difference from the fallback path.
+- A subsystem/probe metric cannot close a final-image claim unless matching render targets isolate direct, scene-linear indirect, albedo, tone mapping, and receiver masks.
+- Evidence readers are part of the proof. Test absent, disabled, enabled, and malformed returns; never let a reader recurse into its wrapper.
+- Optimization claims must describe the local loop/readback/pass shape, not a different branch or reference implementation.
+- External references must state `proves` and `does not prove`; inspiration is not evidence that the local feature exists.
+- Reports must state whether build, tests, screenshots, GPU timing, and readbacks actually ran.
 
 ## Design-Science Review
 

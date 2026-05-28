@@ -109,7 +109,7 @@ ${rows}
 
 - Expectation pass rate measures partial behavioral lift.
 - Full eval pass rate is intentionally strict: every shared assertion, failure mode, and forbidden shortcut must pass.
-- Treat a high expectation lift with low full-pass count as useful but incomplete; it means the skill is steering behavior, but some required pressure is still missing.
+- Treat a high expectation lift with low full-pass count as useful but incomplete; it means the skill is improving behavior, but some required pressure is still missing.
 `;
 }
 

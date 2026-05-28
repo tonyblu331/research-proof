@@ -1,0 +1,4 @@
+cell_id,candidate,observed_pressure,d1_status,artifact_note
+cell-A1,cache leakage,0.12,not_run,weak prose-only suspicion
+cell-B2,split leakage,0.18,not_run,requires row audit
+cell-C3,probe interpolation,0.07,not_run,no dominant evidence

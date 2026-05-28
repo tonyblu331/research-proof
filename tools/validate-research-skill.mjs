@@ -26,10 +26,13 @@ const requiredFiles = {
     "Backtest This Skill",
     "Prompt-injection boundary",
     "evals/evals.json",
-    "references/skill-steering.md",
+    "references/skill-improvement.md",
     "negative-control pressure",
     "behavior metric",
     "live-source research review",
+    "Causal attribution review",
+    "ranking basis",
+    "DOMINANT_UNKNOWN_PENDING_D1",
   ],
   "evals/evals.json": [
     "shared_assertions",
@@ -54,6 +57,8 @@ const requiredFiles = {
     "unmeasured-skill-lift",
   ],
   "references/source-patterns.md": [
+    "Scientific Workflow Patterns",
+    "Research workflow routers",
     "OpenAI prompt-injection guidance",
     "Anthropic prompt-injection research",
     "OWASP LLM prompt-injection guidance",
@@ -72,6 +77,7 @@ const requiredFiles = {
     "Fixed-Harness Research Loop",
     "Proof Ladder",
     "Causal Identification Review",
+    "Causal Attribution Review",
     "Design-Science Review",
     "Readiness / Transfer Ladder",
     "Progressive-Program Review",
@@ -83,6 +89,16 @@ const requiredFiles = {
     "Clinical-AI Reporting Review",
     "review authority",
     "success metric",
+    "search strategy",
+    "deduplication rule",
+    "citation-backed claims",
+    "effect sizes",
+    "Pre-D1 Candidate Map",
+    "Ranking Basis",
+    "observed_evidence_ranking",
+    "EvidenceRefs",
+    "resolved to provided artifacts",
+    "DOMINANT_UNKNOWN_PENDING_D1",
   ],
   "references/backtest-cases.md": [
     "Use `evals/evals.json` as the single source of truth",
@@ -108,15 +124,19 @@ const requiredFiles = {
     "Prompt-Injection Boundary",
     "SDD Integration",
   ],
-  "references/skill-steering.md": [
-    "Steering Thesis",
+  "references/skill-improvement.md": [
+    "Improvement Thesis",
     "Delegation Rules",
     "Harness Maturity Ladder",
     "No-Bloat Rule",
     "Backtest Loop",
-    "Peer-Pressure Pass",
-    "12/10 Rating Bar",
+    "Independent Review Pass",
+    "Capability Rating Bar",
     "Patterns To Borrow",
+    "Scientific workflow-router pattern",
+    "Scientific provenance pattern",
+    "Causal attribution pattern",
+    "Ranking Basis",
   ],
 };
 
@@ -170,7 +190,19 @@ const requiredMethods = [
   "tool-grounded scientific workflow",
   "live-source research review",
   "clinical-ai reporting review",
-  "skill steering review",
+  "skill improvement review",
+  "causal attribution review",
+];
+
+const projectSpecificBiasTerms = [
+  "DDGI",
+  "Phos",
+  "lightprobe",
+  "light-probe",
+  "SixteenStudio",
+  "QueueKit",
+  "PRIVATE-DDGI",
+  "AUTO-RETRY-WORKER",
 ];
 
 function normalize(text) {
@@ -252,6 +284,20 @@ async function checkRemovedDuplication(failures) {
     .catch(() => undefined);
 }
 
+async function checkNoProjectSpecificBiasTerms(failures) {
+  const scanRoots = [skillRoot, pluginSkillRoot];
+  for (const scanRoot of scanRoots) {
+    const files = await listFiles(scanRoot).catch(() => []);
+    for (const file of files) {
+      const relativePath = relative(root, file).replaceAll("\\", "/");
+      const text = await readFile(file, "utf8").catch(() => "");
+      const lower = text.toLowerCase();
+      const found = projectSpecificBiasTerms.filter((term) => lower.includes(term.toLowerCase()));
+      if (found.length) failures.push(`${relativePath}: project-specific bias terms remain: ${found.join(", ")}`);
+    }
+  }
+}
+
 async function checkEvalSchema(failures) {
   const rootJson = await readSkillJson("evals/evals.json", failures);
   if (!rootJson || typeof rootJson !== "object" || Array.isArray(rootJson)) {
@@ -303,6 +349,74 @@ async function checkEvalSchema(failures) {
       failures.push(`eval ${index}: forbidden_shortcuts must include at least two items`);
     }
     if (!Array.isArray(evalCase.files)) failures.push(`eval ${index}: files must be a list`);
+    if ("artifact_expectations" in evalCase) {
+      if (!Array.isArray(evalCase.artifact_expectations) || evalCase.artifact_expectations.length === 0) {
+        failures.push(`eval ${index}: artifact_expectations must be a non-empty list when present`);
+      } else {
+        for (const [checkIndex, check] of evalCase.artifact_expectations.entries()) {
+          if (!check || typeof check.label !== "string" || !check.label.trim()) {
+            failures.push(`eval ${index}: artifact_expectations[${checkIndex}].label must be non-empty`);
+          }
+          if (!Array.isArray(check.terms) || check.terms.length < 2 || check.terms.some((term) => typeof term !== "string" || !term.trim())) {
+            failures.push(`eval ${index}: artifact_expectations[${checkIndex}].terms must include at least two non-empty strings`);
+          }
+        }
+      }
+    }
+    if ("artifact_structural_expectations" in evalCase) {
+      if (!Array.isArray(evalCase.artifact_structural_expectations) || evalCase.artifact_structural_expectations.length === 0) {
+        failures.push(`eval ${index}: artifact_structural_expectations must be a non-empty list when present`);
+      } else {
+        for (const [checkIndex, check] of evalCase.artifact_structural_expectations.entries()) {
+          if (!check || typeof check.label !== "string" || !check.label.trim()) {
+            failures.push(`eval ${index}: artifact_structural_expectations[${checkIndex}].label must be non-empty`);
+          }
+          if (typeof check.file !== "string" || !check.file.startsWith("evals/fixtures/")) {
+            failures.push(`eval ${index}: artifact_structural_expectations[${checkIndex}].file must point to evals/fixtures/`);
+          }
+          if (!["csv_id_resolution", "json_fields"].includes(check.type)) {
+            failures.push(`eval ${index}: artifact_structural_expectations[${checkIndex}].type is invalid`);
+          }
+          if (check.type === "csv_id_resolution" && (!check.id_column || !Array.isArray(check.must_include_ids) || !Array.isArray(check.must_not_include_ids))) {
+            failures.push(`eval ${index}: csv_id_resolution structural expectation must declare id_column, must_include_ids, and must_not_include_ids`);
+          }
+          if (check.type === "json_fields" && (!Array.isArray(check.fields) || check.fields.length === 0)) {
+            failures.push(`eval ${index}: json_fields structural expectation must declare fields`);
+          }
+        }
+      }
+    }
+    if ("decision_expectations" in evalCase) {
+      if (!Array.isArray(evalCase.decision_expectations) || evalCase.decision_expectations.length === 0) {
+        failures.push(`eval ${index}: decision_expectations must be a non-empty list when present`);
+      } else {
+        for (const [checkIndex, check] of evalCase.decision_expectations.entries()) {
+          if (!check || typeof check.label !== "string" || !check.label.trim()) {
+            failures.push(`eval ${index}: decision_expectations[${checkIndex}].label must be non-empty`);
+          }
+          if (!Array.isArray(check.status_any) || check.status_any.length === 0 || check.status_any.some((term) => typeof term !== "string" || !term.trim())) {
+            failures.push(`eval ${index}: decision_expectations[${checkIndex}].status_any must include at least one non-empty string`);
+          }
+          if (!Array.isArray(check.ledger_any) || check.ledger_any.length === 0 || check.ledger_any.some((term) => typeof term !== "string" || !term.trim())) {
+            failures.push(`eval ${index}: decision_expectations[${checkIndex}].ledger_any must include at least one non-empty string`);
+          }
+        }
+      }
+    }
+    if ("contradiction_expectations" in evalCase) {
+      if (!Array.isArray(evalCase.contradiction_expectations) || evalCase.contradiction_expectations.length === 0) {
+        failures.push(`eval ${index}: contradiction_expectations must be a non-empty list when present`);
+      } else {
+        for (const [checkIndex, check] of evalCase.contradiction_expectations.entries()) {
+          if (!check || typeof check.label !== "string" || !check.label.trim()) {
+            failures.push(`eval ${index}: contradiction_expectations[${checkIndex}].label must be non-empty`);
+          }
+          if (!Array.isArray(check.forbidden_action_terms) || check.forbidden_action_terms.length < 2) {
+            failures.push(`eval ${index}: contradiction_expectations[${checkIndex}].forbidden_action_terms must include at least two strings`);
+          }
+        }
+      }
+    }
 
     domains.add(evalCase.domain);
     methods.add(normalize(evalCase.method));
@@ -330,7 +444,7 @@ async function checkSkillCreatorExport(failures) {
   const raterPath = join(root, "tools", "rate-research-skill.mjs");
   await stat(raterPath).catch(() => failures.push("missing tools/rate-research-skill.mjs"));
   const runnerText = await readFile(runnerPath, "utf8").catch(() => "");
-  for (const term of ["safeIterationDir", "expected_eval_ids", "hasLedgerDecision", "duplicate eval id"]) {
+  for (const term of ["safeIterationDir", "expected_eval_ids", "hasLedgerDecision", "duplicate eval id", "artifact_expectations", "artifact_structural_expectations", "decision_expectations", "contradiction_expectations", "parseVerdictStatus", "matchesStructuralArtifactExpectation", "matchesNoContradictionExpectation", "hard_gate_pass_rate"]) {
     if (!runnerText.includes(term)) failures.push(`tools/run-research-backtest.mjs: missing ${term}`);
   }
   const comparerText = await readFile(comparerPath, "utf8").catch(() => "");
@@ -342,7 +456,7 @@ async function checkSkillCreatorExport(failures) {
     if (!packerText.includes(term)) failures.push(`tools/create-research-eval-pack.mjs: missing ${term}`);
   }
   const raterText = await readFile(raterPath, "utf8").catch(() => "");
-  for (const term of ["12/10 Gate Report", "Old-vs-new regression dashboard", "Full-suite or noisy multi-seed behavior", "Real-task transfer"]) {
+  for (const term of ["Capability Gate Report", "Old-vs-new regression dashboard", "Full-suite or noisy multi-seed behavior", "Tracked release evidence", "artifact_expectation_pass_rate", "structural_artifact_expectation_pass_rate", "decision_expectation_pass_rate", "contradiction_expectation_pass_rate", "hard_gate_pass_rate", "at least 3 noisy full-suite seeds"]) {
     if (!raterText.includes(term)) failures.push(`tools/rate-research-skill.mjs: missing ${term}`);
   }
 
@@ -393,6 +507,7 @@ async function main() {
   await checkRequiredText(failures);
   await checkSkillCompactness(failures);
   await checkRemovedDuplication(failures);
+  await checkNoProjectSpecificBiasTerms(failures);
   await checkEvalSchema(failures);
   await checkSkillCreatorExport(failures);
   await checkPluginDrift(failures);
